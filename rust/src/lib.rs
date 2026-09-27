@@ -1,46 +1,47 @@
-use godot::{
-    classes::{ISprite2D, Input, Sprite2D},
-    global::Key,
-    prelude::*,
-};
+use bevy::prelude::*;
+use godot_bevy::prelude::*;
 
-struct GodotRustExtension;
+#[derive(Component, GodotNode, Default)]
+#[gdbevy(base = Sprite2D, class_name = PlayerNode)]
+struct Player;
 
-#[gdextension]
-unsafe impl ExtensionLibrary for GodotRustExtension {}
-
-#[derive(GodotClass)]
-#[class(init, base=Sprite2D)]
-struct Player {
-    #[init(val = 300.0)]
-    speed: f32,
-
-    base: Base<Sprite2D>,
+#[bevy_app]
+fn build_app(app: &mut App) {
+    app.add_plugins(GodotDefaultPlugins)
+        .insert_resource(DebuggerConfig {
+            enabled: false,
+            ..Default::default()
+        })
+        .add_systems(Update, player_movement);
 }
 
-#[godot_api]
-impl ISprite2D for Player {
-    fn process(&mut self, delta: f64) {
-        let input = Input::singleton();
-        let mut direction = Vector2::ZERO;
+fn player_movement(
+    time: Res<Time>,
+    keys: Res<ButtonInput<KeyCode>>,
+    mut players: Query<&mut Transform, With<Player>>,
+) {
+    let mut direction = Vec2::ZERO;
 
-        if input.is_physical_key_pressed(Key::B) || input.is_physical_key_pressed(Key::LEFT) {
-            direction.x -= 1.0;
-        }
-        if input.is_physical_key_pressed(Key::D) || input.is_physical_key_pressed(Key::RIGHT) {
-            direction.x += 1.0;
-        }
-        if input.is_physical_key_pressed(Key::W) || input.is_physical_key_pressed(Key::UP) {
-            direction.y -= 1.0;
-        }
-        if input.is_physical_key_pressed(Key::S) || input.is_physical_key_pressed(Key::DOWN) {
-            direction.y += 1.0;
-        }
+    if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft) {
+        direction.x -= 1.0;
+    }
+    if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) {
+        direction.x += 1.0;
+    }
+    if keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::ArrowUp) {
+        direction.y -= 1.0;
+    }
+    if keys.pressed(KeyCode::KeyS) || keys.pressed(KeyCode::ArrowDown) {
+        direction.y += 1.0;
+    }
 
-        if direction != Vector2::ZERO {
-            let movement = direction.normalized() * self.speed * delta as f32;
-            let next_position = self.base().get_position() + movement;
-            self.base_mut().set_position(next_position);
-        }
+    if direction == Vec2::ZERO {
+        return;
+    }
+
+    let movement = direction.normalize() * 300.0 * time.delta_secs();
+    for mut transform in &mut players {
+        transform.translation.x += movement.x;
+        transform.translation.y += movement.y;
     }
 }

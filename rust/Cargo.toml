@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-godot = "0.5.5"
+bevy = { version = "0.19", default-features = false }
+godot = "0.5"
+godot-bevy = "0.12"
 
 [lib]
 crate-type = ["cdylib"]
