@@ -6,10 +6,10 @@ use godot::classes::CanvasItem;
 use godot_bevy::interop::{GodotAccess, GodotNodeHandle};
 use godot_bevy::plugins::input::{GodotMouseButton, GodotMouseButtonInput};
 
-use super::components::{Player, PlayerSpeed};
-use super::resources::MouseMoveTarget;
+use super::super::MouseMoveTarget;
+use super::super::components::{Player, PlayerSpeed};
 
-pub(super) fn player_movement(
+pub(crate) fn player_movement(
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
     mut mouse_clicks: MessageReader<GodotMouseButtonInput>,

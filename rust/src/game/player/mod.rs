@@ -4,7 +4,7 @@ mod systems;
 
 use bevy::prelude::{App, Plugin, Update};
 use resources::MouseMoveTarget;
-use systems::player_movement;
+use systems::movement::player_movement;
 
 pub(super) struct PlayerPlugin;
 
