@@ -17,7 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-BevyAppSingleton="*res://bevy_app_singleton.tscn"
+BevyAppSingleton="*uid://bjsfwt816j4tp"
 
 [display]
 
@@ -27,6 +27,10 @@ window/stretch/aspect="expand"
 [dotnet]
 
 project/assembly_name="godot_rust"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot-bevy/plugin.cfg")
 
 [physics]
 

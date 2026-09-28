@@ -4,7 +4,7 @@
 
 [node name="World" type="Node2D" unique_id=1099752544]
 
-[node name="Player" type="PlayerNode" parent="." unique_id=440789634]
-position = Vector2(320, 119)
+[node name="Player" type="PlayerNode" parent="." unique_id=165913163]
+position = Vector2(298, 107.00001)
 scale = Vector2(0.375, 0.3984375)
 texture = ExtResource("1_4flbx")
