@@ -6,18 +6,17 @@ use godot::classes::CanvasItem;
 use godot_bevy::interop::{GodotAccess, GodotNodeHandle};
 use godot_bevy::plugins::input::{GodotMouseButton, GodotMouseButtonInput};
 
-use super::components::Player;
-use super::resources::{MouseMoveTarget, PlayerMovementSettings};
+use super::components::{Player, PlayerSpeed};
+use super::resources::MouseMoveTarget;
 
 pub(super) fn player_movement(
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
     mut mouse_clicks: MessageReader<GodotMouseButtonInput>,
-    settings: Res<PlayerMovementSettings>,
     mut mouse_target: ResMut<MouseMoveTarget>,
     mut godot: GodotAccess,
     player_nodes: Query<&GodotNodeHandle, With<Player>>,
-    mut players: Query<&mut Transform, With<Player>>,
+    mut players: Query<(&mut Transform, &PlayerSpeed), With<Player>>,
 ) {
     let click_position = mouse_clicks
         .read()
@@ -36,9 +35,9 @@ pub(super) fn player_movement(
 
     let direction = keyboard_direction(&keys);
 
-    for mut transform in &mut players {
+    for (mut transform, speed) in &mut players {
         if direction != Vec2::ZERO {
-            transform.translation += (direction * settings.speed * time.delta_secs()).extend(0.0);
+            transform.translation += (direction * speed.0 * time.delta_secs()).extend(0.0);
             mouse_target.0 = None;
             continue;
         }
@@ -49,7 +48,7 @@ pub(super) fn player_movement(
 
         let current_position = transform.translation.truncate();
         let offset = target - current_position;
-        let max_step = settings.speed * time.delta_secs();
+        let max_step = speed.0 * time.delta_secs();
 
         if offset.length_squared() <= max_step * max_step {
             transform.translation.x = target.x;
