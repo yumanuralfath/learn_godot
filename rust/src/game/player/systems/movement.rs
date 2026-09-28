@@ -26,38 +26,57 @@ pub(crate) fn player_movement(
 
     if let (Some(click_position), Some(handle)) = (click_position, player_nodes.iter().next()) {
         if let Some(canvas_item) = godot.try_get::<CanvasItem>(*handle) {
-            let mouse_to_world = canvas_item.get_canvas_transform().affine_inverse();
-            let world_position =
-                mouse_to_world * GodotVec2::new(click_position.x, click_position.y);
-            mouse_target.0 = Some(Vec2::new(world_position.x, world_position.y));
+            mouse_target.0 = Some(mouse_to_world_position(click_position, &canvas_item));
         }
     }
 
     let direction = keyboard_direction(&keys);
 
     for (mut transform, speed) in &mut players {
-        if direction != Vec2::ZERO {
-            transform.translation += (direction * speed.0 * time.delta_secs()).extend(0.0);
-            mouse_target.0 = None;
-            continue;
-        }
+        move_player(
+            &mut transform,
+            speed.0,
+            direction,
+            &mut mouse_target.0,
+            time.delta_secs(),
+        );
+    }
+}
 
-        let Some(target) = mouse_target.0 else {
-            continue;
-        };
+fn mouse_to_world_position(click_position: Vec2, canvas_item: &CanvasItem) -> Vec2 {
+    let mouse_to_world = canvas_item.get_canvas_transform().affine_inverse();
+    let world_position = mouse_to_world * GodotVec2::new(click_position.x, click_position.y);
+    Vec2::new(world_position.x, world_position.y)
+}
 
-        let current_position = transform.translation.truncate();
-        let offset = target - current_position;
-        let max_step = speed.0 * time.delta_secs();
+fn move_player(
+    transform: &mut Transform,
+    speed: f32,
+    direction: Vec2,
+    mouse_target: &mut Option<Vec2>,
+    delta_seconds: f32,
+) {
+    if direction != Vec2::ZERO {
+        transform.translation += (direction * speed * delta_seconds).extend(0.0);
+        *mouse_target = None;
+        return;
+    }
 
-        if offset.length_squared() <= max_step * max_step {
-            transform.translation.x = target.x;
-            transform.translation.y = target.y;
-        } else {
-            let movement = offset.normalize() * max_step;
-            transform.translation.x += movement.x;
-            transform.translation.y += movement.y;
-        }
+    let Some(target) = *mouse_target else {
+        return;
+    };
+
+    let current_position = transform.translation.truncate();
+    let offset = target - current_position;
+    let max_step = speed * delta_seconds;
+
+    if offset.length_squared() <= max_step * max_step {
+        transform.translation.x = target.x;
+        transform.translation.y = target.y;
+    } else {
+        let movement = offset.normalize() * max_step;
+        transform.translation.x += movement.x;
+        transform.translation.y += movement.y;
     }
 }
 
